@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
-	r := lib.Rectangle{lib.Point{0, 0}, lib.Point{10, 10}}
-	c := lib.Circle{0, 0, 5}
+	r := lib.Rectangle{P1: lib.Point{X: 0, Y: 0}, P2: lib.Point{X: 10, Y: 10}}
+	c := lib.Circle{X: 0, Y: 0, R: 5}
 
 	fmt.Println(r.Area())
 	fmt.Println(c.Area())
