@@ -1,0 +1,9 @@
+[submodule "src/github.com/golang/lint"]
+	path = src/github.com/golang/lint
+	url = http://github.com/golang/lint
+[submodule "src/github.com/golang/tools"]
+	path = src/github.com/golang/tools
+	url = http://github.com/golang/tools
+[submodule "src/github.com/johnellis1392/todos"]
+	path = src/github.com/johnellis1392/todos
+	url = http://github.com/johnellis1392/todos
