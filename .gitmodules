@@ -7,3 +7,21 @@
 [submodule "src/github.com/johnellis1392/todos"]
 	path = src/github.com/johnellis1392/todos
 	url = http://github.com/johnellis1392/todos
+[submodule "src/github.com/alecthomas/gometalinter"]
+	path = src/github.com/alecthomas/gometalinter
+	url = http://github.com/alecthomas/gometalinter
+[submodule "src/github.com/fatih/gomodifytags"]
+	path = src/github.com/fatih/gomodifytags
+	url = http://github.com/fatih/gomodifytags
+[submodule "src/github.com/nsf/gocode"]
+	path = src/github.com/nsf/gocode
+	url = http://github.com/nsf/gocode
+[submodule "src/github.com/rogpeppe/godef"]
+	path = src/github.com/rogpeppe/godef
+	url = http://github.com/rogpeppe/godef
+[submodule "src/github.com/sqs/goreturns"]
+	path = src/github.com/sqs/goreturns
+	url = http://github.com/sqs/goreturns
+[submodule "src/github.com/zmb3/gogetdoc"]
+	path = src/github.com/zmb3/gogetdoc
+	url = http://github.com/zmb3/gogetdoc
