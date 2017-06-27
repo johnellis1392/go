@@ -25,3 +25,6 @@
 [submodule "src/github.com/zmb3/gogetdoc"]
 	path = src/github.com/zmb3/gogetdoc
 	url = http://github.com/zmb3/gogetdoc
+[submodule "src/golang.org/x/tools"]
+	path = src/golang.org/x/tools
+	url = https://go.googlesource.com/tools
