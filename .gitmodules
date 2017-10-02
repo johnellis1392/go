@@ -31,3 +31,6 @@
 [submodule "src/github.com/udacity/ud615"]
 	path = src/github.com/udacity/ud615
 	url = https://github.com/udacity/ud615.git
+[submodule "/Users/johnellis/workspace/go/src/github.com/go-sql-driver/mysql"]
+	path = /Users/johnellis/workspace/go/src/github.com/go-sql-driver/mysql
+	url = https://github.com/go-sql-driver/mysql
