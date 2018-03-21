@@ -1,3 +1,6 @@
 [submodule "src/github.com/udacity/ud615"]
 	path = src/github.com/udacity/ud615
 	url = https://github.com/udacity/ud615.git
+[submodule "src/gitlab.com/john.ellis1392/todos"]
+	path = src/gitlab.com/john.ellis1392/todos
+	url = https://gitlab.com/john.ellis1392/todos
