@@ -1,36 +1,6 @@
-[submodule "src/github.com/golang/lint"]
-	path = src/github.com/golang/lint
-	url = http://github.com/golang/lint
-[submodule "src/github.com/golang/tools"]
-	path = src/github.com/golang/tools
-	url = http://github.com/golang/tools
 [submodule "src/github.com/johnellis1392/todos"]
 	path = src/github.com/johnellis1392/todos
 	url = http://github.com/johnellis1392/todos
-[submodule "src/github.com/alecthomas/gometalinter"]
-	path = src/github.com/alecthomas/gometalinter
-	url = http://github.com/alecthomas/gometalinter
-[submodule "src/github.com/fatih/gomodifytags"]
-	path = src/github.com/fatih/gomodifytags
-	url = http://github.com/fatih/gomodifytags
-[submodule "src/github.com/nsf/gocode"]
-	path = src/github.com/nsf/gocode
-	url = http://github.com/nsf/gocode
-[submodule "src/github.com/rogpeppe/godef"]
-	path = src/github.com/rogpeppe/godef
-	url = http://github.com/rogpeppe/godef
-[submodule "src/github.com/sqs/goreturns"]
-	path = src/github.com/sqs/goreturns
-	url = http://github.com/sqs/goreturns
-[submodule "src/github.com/zmb3/gogetdoc"]
-	path = src/github.com/zmb3/gogetdoc
-	url = http://github.com/zmb3/gogetdoc
-[submodule "src/golang.org/x/tools"]
-	path = src/golang.org/x/tools
-	url = https://go.googlesource.com/tools
 [submodule "src/github.com/udacity/ud615"]
 	path = src/github.com/udacity/ud615
 	url = https://github.com/udacity/ud615.git
-[submodule "/Users/johnellis/workspace/go/src/github.com/go-sql-driver/mysql"]
-	path = /Users/johnellis/workspace/go/src/github.com/go-sql-driver/mysql
-	url = https://github.com/go-sql-driver/mysql
