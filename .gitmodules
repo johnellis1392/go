@@ -1,6 +1,3 @@
-[submodule "src/github.com/johnellis1392/todos"]
-	path = src/github.com/johnellis1392/todos
-	url = http://github.com/johnellis1392/todos
 [submodule "src/github.com/udacity/ud615"]
 	path = src/github.com/udacity/ud615
 	url = https://github.com/udacity/ud615.git
