@@ -1,0 +1,14 @@
+version: '3.3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080/tcp
+    environment:
+      PORT: 8080
+      WORKSPACE: /workplace/workplace
+    volumes:
+      - /Volumes/Unix:/workplace

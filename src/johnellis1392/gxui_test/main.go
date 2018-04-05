@@ -12,10 +12,13 @@ import (
 	"time"
 
 	"github.com/google/gxui"
-	"github.com/google/gxui/drivers/gl"
+	gldriver "github.com/google/gxui/drivers/gl"
 	"github.com/google/gxui/gxfont"
 	"github.com/google/gxui/math"
 	"github.com/google/gxui/samples/flags"
+
+	goxjs "github.com/goxjs/gl"
+	goxjsglfw "github.com/goxjs/glfw"
 )
 
 func appMain(driver gxui.Driver) {
@@ -56,8 +59,41 @@ func appMain(driver gxui.Driver) {
 	window.OnClose(driver.Terminate)
 }
 
+func gxuiExample() {
+	gldriver.StartDriver(appMain)
+}
+
+func loop() {
+	// for {
+	goxjsglfw.WaitEvents()
+	// }
+}
+
+func goxjsExample() {
+	var err error
+
+	if err = goxjsglfw.Init(goxjs.ContextWatcher); err != nil {
+		panic(err)
+	}
+	defer goxjsglfw.Terminate()
+
+	goxjs.ClearColor(1.0, 0.0, 0.0, 0.5)
+	goxjs.Clear(goxjs.COLOR_BUFFER_BIT)
+
+	loop()
+
+	// This is an example of how to use your own custom
+	// ContextWatcher element:
+	// window.MakeContextCurrent()
+	// goxjs.ContextWatcher.OnMakeCurrent(nil)
+	//
+	// goxjsglfw.DetachCurrentContext()
+	// goxjs.ContextWatcher.OnDetach()
+}
+
 func main() {
-	gl.StartDriver(appMain)
+	// gxuiExample()
+	goxjsExample()
 }
 
 // import (
