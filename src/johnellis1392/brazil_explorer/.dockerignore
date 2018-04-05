@@ -1,0 +1,7 @@
+/bin
+/*.iml
+/.gitignore
+
+/.dockerignore
+docker-compose.yaml
+Dockerfile
