@@ -44,7 +44,19 @@ func withParser() {
 	}
 }
 
+func withMarshaller() {
+	tokchan := lex(input)
+	nodechan := parse(tokchan)
+	marchan := marshal(nodechan)
+
+	fmt.Println("Running...")
+	for n := range marchan {
+		fmt.Println("Received Value: ", n)
+	}
+}
+
 func main() {
 	// withLexer()
-	withParser()
+	// withParser()
+	withMarshaller()
 }

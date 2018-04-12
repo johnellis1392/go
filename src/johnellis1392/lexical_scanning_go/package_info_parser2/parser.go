@@ -8,6 +8,7 @@ const (
 	nodeErr nodeType = iota
 	nodeEOF
 
+	nodeFile
 	nodeObj
 	nodeDecl
 
@@ -61,24 +62,20 @@ func (t nodeType) isValue() bool {
 	}
 }
 
-// func (t nodeType) isParent(t2 nodeType) bool {
-// 	switch t {
-// 	case nodeValue, nodeIdent:
-// 		return true
-// 	default:
-// 		return false
-// 	}
-// }
-
 type parseFn func(*parser) parseFn
 
 type node interface {
 	Type() nodeType
 	String() string
+	semant() error // Defined in `./marshaller.go`
 }
 
 type nerror struct {
 	val string
+}
+
+func (n nerror) Error() string {
+	return n.val
 }
 
 func (n nerror) Type() nodeType {
@@ -127,7 +124,46 @@ func (n nterm) String() string {
 	return fmt.Sprintf("nterm{%q, %s}", n.typ, n.val)
 }
 
+type nfile struct {
+	decls []node
+}
+
+func (n nfile) Type() nodeType {
+	return nodeFile
+}
+
+func (n nfile) String() string {
+	var s string
+	s += "nfile{"
+	for _, d := range n.decls {
+		s += "  " + d.String() + "\n"
+	}
+	s += "}"
+	return s
+}
+
 // State Functions
+
+// Reduce File
+func parseAfterFile(p *parser) parseFn {
+	if n, ok := p.pop(); !ok || n.Type() != nodeEOF {
+		return p.errorf("illegal token at end of file: %q", n)
+	}
+
+	var decls []node
+	for {
+		switch n, ok := p.pop(); {
+		case !ok: // No More; Done
+			p.push(nfile{decls})
+			return nil
+		case n.Type() == nodeDecl:
+			decls = append(decls, n)
+			continue
+		default:
+			return p.errorf("illegal node found in file parse: %q", n)
+		}
+	}
+}
 
 // Reduce Object
 func parseAfterObject(p *parser) parseFn {
@@ -145,7 +181,8 @@ func parseAfterObject(p *parser) parseFn {
 			continue
 		case n.Type() == nodeLeftBrace:
 			p.push(nobject{decls})
-			return p.popState()
+			// return p.popState()
+			return parseAfterValue
 		default:
 			return p.errorf("illegal node found in object: %q", n)
 		}
@@ -193,7 +230,24 @@ func parseAfterDecl(p *parser) parseFn {
 	}
 
 	p.push(ndecl{id, v})
-	return p.popState()
+	// return p.popState()
+	// return parseInsideObject
+
+	// Continue Parse:
+	// * If next token is '}', we're in an object; close
+	// * If next token is ident, we're uh...?; parse declaration
+	// * If next token is eof, assume end; return
+	// * Otherwise, error
+	switch n := p.shift(); n.Type() {
+	case nodeRightBrace:
+		return parseAfterObject
+	case nodeIdent:
+		return parseDecl
+	case nodeEOF:
+		return parseAfterFile
+	default:
+		return p.errorf("illegal token following declaration: %q", n)
+	}
 }
 
 func parseAfterValue(p *parser) parseFn {
@@ -208,7 +262,7 @@ func parseAfterValue(p *parser) parseFn {
 func parseValue(p *parser) parseFn {
 	switch n := p.shift(); n.Type() {
 	case nodeLeftBrace:
-		p.pushState(parseAfterValue)
+		// p.pushState(parseAfterValue)
 		return parseInsideObject
 	case nodeIdent, nodeString, nodeNumber, nodePath:
 		return parseAfterValue
@@ -243,7 +297,7 @@ type parser struct {
 	output chan node
 	state  parseFn
 	stack  []node
-	states []parseFn
+	// states []parseFn
 }
 
 func (p *parser) errorf(format string, args ...interface{}) parseFn {
@@ -301,6 +355,7 @@ func (p *parser) shift() node {
 		n = nerror{fmt.Sprintf("illegal token: %q", t)}
 	}
 
+	// fmt.Printf(" * Received Token: %q\n", n)
 	p.push(n)
 	return n
 }
@@ -318,18 +373,18 @@ func (p *parser) pop() (node, bool) {
 	return n, true
 }
 
-func (p *parser) pushState(f parseFn) {
-	p.states = append(p.states, f)
-}
-
-func (p *parser) popState() parseFn {
-	if len(p.states) == 0 {
-		return nil
-	}
-	f := p.states[len(p.states)-1]
-	p.states = p.states[:len(p.states)-1]
-	return f
-}
+// func (p *parser) pushState(f parseFn) {
+// 	p.states = append(p.states, f)
+// }
+//
+// func (p *parser) popState() parseFn {
+// 	if len(p.states) == 0 {
+// 		return nil
+// 	}
+// 	f := p.states[len(p.states)-1]
+// 	p.states = p.states[:len(p.states)-1]
+// 	return f
+// }
 
 func (p *parser) run() {
 	for p.state != nil {
@@ -350,7 +405,7 @@ func newParser(input chan token) *parser {
 		input:  input,
 		output: make(chan node),
 		state:  parseFile,
-		states: []parseFn{},
+		// states: []parseFn{},
 	}
 	return &p
 }

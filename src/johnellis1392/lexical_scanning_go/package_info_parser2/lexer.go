@@ -167,6 +167,9 @@ func lexString(l *lexer) stateFn {
 		return l.errorf("invalid start of string: %v, %q", l.peek(), l.peek())
 	}
 
+	// Skip Open Quote
+	l.ignore()
+
 	for {
 		switch r := l.next(); {
 		case r == '\\':
@@ -175,7 +178,11 @@ func lexString(l *lexer) stateFn {
 		case r == '\n' || r == eof:
 			return l.errorf("unexpected character in string: %v, %q", r, r)
 		case r == '"':
+			// Skip Close Quote
+			l.backup()
 			l.emit(tokenString)
+			l.accept("\"")
+			l.ignore()
 			return lexFile
 		default:
 			continue
