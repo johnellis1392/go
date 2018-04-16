@@ -5,10 +5,11 @@ import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 	"unsafe"
 
-	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/go-gl/mathgl/mgl32"
 	"golang.org/x/mobile/exp/f32"
@@ -38,167 +39,14 @@ void main() {
 }
 `
 
-// func goxjsTest() {
-// 	// Initialize GL
-// 	fatal(glfw.Init(gl.ContextWatcher))
-// 	defer glfw.Terminate()
-//
-// 	// Create Window Object
-// 	var windowSize = [2]int{640, 480}
-// 	glfw.WindowHint(glfw.Samples, 8)
-// 	window, err := glfw.CreateWindow(windowSize[0], windowSize[1], "", nil, nil)
-// 	fatal(err)
-//
-// 	window.MakeContextCurrent()
-//
-// 	// Print GL Configuration Information
-// 	dumpGLConfig()
-//
-// 	// Logic for Moving Mouse Cursor
-// 	cursorPos := [2]float32{200, 200}
-// 	cursorPosCallback := func(_ *glfw.Window, x, y float64) {
-// 		cursorPos[0], cursorPos[1] = float32(x), float32(y)
-// 	}
-// 	window.SetCursorPosCallback(cursorPosCallback)
-//
-// 	// Callback for when Framebuffer Changes;
-// 	// Framebuffers are the objects that contain image and rendering data.
-// 	// Assumedly this would be triggered on window resize
-// 	framebufferSizeCallback := func(w *glfw.Window, framebufferSize0, framebufferSize1 int) {
-// 		gl.Viewport(0, 0, framebufferSize0, framebufferSize1)
-// 		windowSize[0], windowSize[1] = w.GetSize()
-// 	}
-// 	window.SetFramebufferSizeCallback(framebufferSizeCallback)
-// 	var framebufferSize [2]int
-// 	framebufferSize[0], framebufferSize[1] = window.GetFramebufferSize()
-// 	framebufferSizeCallback(window, framebufferSize[0], framebufferSize[1])
-//
-// 	// Clear Screen Color
-// 	gl.ClearColor(0.8, 0.3, 0.01, 1)
-//
-// 	// Create and Set Active a new Program using our custom Shaders
-// 	program, err := glutil.CreateProgram(vertexSource, fragmentSource)
-// 	fatal(err)
-//
-// 	gl.ValidateProgram(program)
-// 	if gl.GetProgrami(program, gl.VALIDATE_STATUS) != gl.TRUE {
-// 		fatal(fmt.Errorf("gl validate status: %s", gl.GetProgramInfoLog(program)))
-// 	}
-// 	gl.UseProgram(program)
-//
-// 	// Get Uniform Locations
-// 	pMatrixUniform := gl.GetUniformLocation(program, "uPMatrix")
-// 	mvMatrixUniform := gl.GetUniformLocation(program, "uMVMatrix")
-//
-// 	// Load Triangle Vertex Data into Shaders
-// 	triangleVertexPositionBuffer := gl.CreateBuffer()
-// 	gl.BindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
-// 	vertices := f32.Bytes(binary.LittleEndian,
-// 		0, 0, 0,
-// 		300, 100, 0,
-// 		0, 100, 0,
-// 	)
-// 	gl.BufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
-// 	itemSize := 3
-// 	itemCount := 3
-//
-// 	// Setup Vertex Attribute Arrays
-// 	vertexPositionAttrib := gl.GetAttribLocation(program, "aVertexPosition")
-// 	gl.EnableVertexAttribArray(vertexPositionAttrib)
-// 	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, 0)
-//
-// 	// Check for Errors
-// 	if err := gl.GetError(); err != 0 {
-// 		fatal(fmt.Errorf("gl error: %v", err))
-// 	}
-//
-// 	// Main Render Loop
-// 	for !window.ShouldClose() {
-//
-// 		// Clear
-// 		gl.Clear(gl.COLOR_BUFFER_BIT)
-//
-// 		// Get Perspective Transformation
-// 		pMatrix := mgl32.Ortho2D(0, float32(windowSize[0]), float32(windowSize[1]), 0)
-//
-// 		// Get Model View Matrix
-// 		mvMatrix := mgl32.Translate3D(cursorPos[0], cursorPos[1], 0)
-//
-// 		// Load Uniform Values for Render
-// 		gl.UniformMatrix4fv(pMatrixUniform, pMatrix[:])
-// 		gl.UniformMatrix4fv(mvMatrixUniform, mvMatrix[:])
-// 		gl.DrawArrays(gl.TRIANGLES, 0, itemCount)
-//
-// 		// Draw New Scene
-// 		window.SwapBuffers()
-//
-// 		// Poll for GL Interaction Events
-// 		glfw.PollEvents()
-// 	}
-// }
+func init() {
+	runtime.LockOSThread()
+}
 
-// type mat4 [4][4]float32
-//
-// func (m mat4) mul(m2 mat4) mat4 {
-// 	var mres mat4
-// 	for i := 0; i < 4; i++ {
-// 		for j := 0; j < 4; j++ {
-// 			var s float32
-// 			for k := 0; k < 4; k++ {
-// 				s += m[i][k] * m2[k][j]
-// 			}
-// 			mres[i][j] = s
-// 		}
-// 	}
-// 	return mres
-// }
-//
-// func (m mat4) vec() [16]float32 {
-// 	var res [16]float32
-// 	for i := 0; i < 4; i++ {
-// 		for j := 0; j < 4; j++ {
-// 			res[4*i+j] = m[i][j]
-// 		}
-// 	}
-// 	return res
-// }
-//
-// func (m mat4) String() string {
-// 	const format = `[
-// 	[ %v, %v, %v, %v ],
-// 	[ %v, %v, %v, %v ],
-// 	[ %v, %v, %v, %v ],
-// 	[ %v, %v, %v, %v ],
-// ]
-// `
-// 	var vs = make([]interface{}, 16)
-// 	for i, f := range m.vec() {
-// 		vs[i] = f
-// 	}
-// 	return fmt.Sprintf(format, vs...)
-// }
-//
-// func test2() {
-// 	m1 := mat4{
-// 		{1.0, 0.0, 0.0},
-// 		{0.0, 1.0, 0.0},
-// 		{0.0, 0.0, 1.0},
-// 	}
-//
-// 	m2 := mat4{
-// 		{1.0, 0.0, 0.0},
-// 		{0.0, 1.0, 0.0},
-// 		{0.0, 0.0, 1.0},
-// 	}
-//
-// 	m3 := m1.mul(m2)
-// 	fmt.Printf("m1 * m2 = %v", m3)
-// }
-
-type GLEnum uint32
+//type GLEnum uint32
 
 const (
-	VENDOR   GLEnum = gl.VENDOR
+	VENDOR   uint32 = gl.VENDOR
 	RENDERER        = gl.RENDERER
 	VERSION         = gl.VERSION
 	SAMPLES         = gl.SAMPLES
@@ -211,7 +59,7 @@ func dumpGLConfig() {
 	fmt.Printf(" * Vendor:    %s\n", GetString(gl.VENDOR))
 	fmt.Printf(" * Renderer:  %s\n", GetString(gl.RENDERER))
 	fmt.Printf(" * Version:   %s\n", GetString(gl.VERSION))
-	fmt.Printf(" * Samples:   %v\n", GetString(gl.SAMPLES))
+	// fmt.Printf(" * Samples:   %v\n", GetString(gl.SAMPLES))
 
 	fmt.Printf("GLSL:\n")
 	fmt.Printf(" * Shading Language Version: %s\n", GetString(gl.SHADING_LANGUAGE_VERSION))
@@ -261,7 +109,7 @@ func GetProgramInfoLog(p uint32) string {
 	return GoString(&logBuffer[0])
 }
 
-func LoadShader(typ GLEnum, src string) (uint32, error) {
+func LoadShader(typ uint32, src string) (uint32, error) {
 	// shader := gl.CreateShader(typ)
 	shader := gl.CreateShader(uint32(typ))
 	if shader == 0 {
@@ -319,23 +167,30 @@ func CreateProgram(vs, fs string) (uint32, error) {
 	return p, nil
 }
 
+func Terminate() {
+	glfw.Terminate()
+	runtime.UnlockOSThread()
+}
+
 func goglTest() error {
 	// Initialize GL
-	glfw.Init()
-	defer glfw.Terminate()
+	err := glfw.Init()
+	if err != nil {
+		return err
+	}
+	//defer glfw.Terminate()
+	defer Terminate()
 
-	// var m glfw.Monitor
-	// var share glfw.Window
 	var windowSize = [2]int{640, 480}
-	glfw.WindowHint(glfw.Samples, 8)
-	// w, err := glfw.CreateWindow(windowSize[0], windowSize[1], "Test Title", &m, &share)
+	//glfw.WindowHint(glfw.Samples, 8)
+	glfw.WindowHint(glfw.Hint(glfw.Samples), 8)
 	w, err := glfw.CreateWindow(windowSize[0], windowSize[1], "Test Title", nil, nil)
 	if err != nil {
 		return err
 	}
 
 	w.MakeContextCurrent()
-	dumpGLConfig()
+	//dumpGLConfig()
 
 	// Set Cursor Change-Listener
 	cursor := [2]float32{200, 200}
@@ -346,15 +201,15 @@ func goglTest() error {
 	// Callback for when Framebuffer Changes;
 	// Framebuffers are the objects that contain image and rendering data.
 	// Assumedly this would be triggered on window resize
-	w.SetFramebufferSizeCallback(func(w *glfw.Window, frameBufferSize0, frameBufferSize1 int) {
+	framebufferSizeCallback := func(w *glfw.Window, frameBufferSize0, frameBufferSize1 int) {
 		x, y := 0, 0
 		gl.Viewport(int32(x), int32(y), int32(frameBufferSize0), int32(frameBufferSize1))
 		windowSize[0], windowSize[1] = w.GetSize()
-	})
-
-	// 	var framebufferSize [2]int
-	// 	framebufferSize[0], framebufferSize[1] = window.GetFramebufferSize()
-	// 	framebufferSizeCallback(window, framebufferSize[0], framebufferSize[1])
+	}
+	w.SetFramebufferSizeCallback(framebufferSizeCallback)
+	var framebufferSize [2]int
+	framebufferSize[0], framebufferSize[1] = w.GetFramebufferSize()
+	framebufferSizeCallback(w, framebufferSize[0], framebufferSize[1])
 
 	// Clear Screen Color
 	var red, green, blue, alpha float32
@@ -433,12 +288,56 @@ func goglTest() error {
 	return nil
 }
 
+func simpleExample() {
+	err := glfw.Init()
+	if err != nil {
+		panic(err)
+	}
+	defer glfw.Terminate()
+
+	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	w.MakeContextCurrent()
+
+	for !w.ShouldClose() {
+		w.SwapBuffers()
+		glfw.PollEvents()
+	}
+}
+
+func simpleExample2() {
+	err := glfw.Init()
+	if err != nil {
+		panic(err)
+	}
+	defer glfw.Terminate()
+
+	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	w.MakeContextCurrent()
+
+	gl.ClearColor(0.0, 0.0, 1.0, 1.0)
+
+	for !w.ShouldClose() {
+		w.SwapBuffers()
+		glfw.PollEvents()
+	}
+}
+
 func main() {
 	// goxjsTest()
-	// test2()
 
 	// err := goglTest()
 	// if err != nil {
 	// 	panic(err)
 	// }
+
+	// simpleExample()
+	simpleExample2()
 }
