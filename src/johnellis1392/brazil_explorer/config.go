@@ -1,40 +1,35 @@
 package main
 
 import (
-  "fmt"
-  "os"
+	"fmt"
+	"os"
 )
-
 
 const (
-  DEFAULT_PORT = "8080"
-  DEFAULT_ADDRESS = ""
+	DEFAULT_PORT = "8080"
+	DEFAULT_ADDR = ""
 )
 
-
-func getenvOrElse(key, def string) string {
-  v, ok := os.LookupEnv(key)
-  if !ok {
-    return def
-  }
-  return v
+type config struct {
+	port string
+	addr string
 }
 
-type Config struct {
-  Port string
-  Address string
+func (c config) AddressString() string {
+	return fmt.Sprintf("%s:%s", c.addr, c.port)
 }
 
-func (c Config) AddressString() string {
-  return fmt.Sprintf("%s:%s", c.Address, c.Port)
+func getenvOrDefault(key, def string) string {
+	if val, ok := os.LookupEnv(key); ok {
+		return val
+	}
+	return def
 }
 
-func NewEnvConfig() Config {
-  port := getenvOrElse("PORT", DEFAULT_PORT)
-  address := getenvOrElse("ADDRESS", DEFAULT_ADDRESS)
-
-  return Config{
-    Port: port,
-    Address: address,
-  }
+func envConfig() config {
+	c := config{
+		port: getenvOrDefault("PORT", DEFAULT_PORT),
+		addr: getenvOrDefault("ADDR", DEFAULT_ADDR),
+	}
+	return c
 }

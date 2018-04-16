@@ -5,10 +5,50 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      PORT: 3000
+      ADDR: ""
+    ports:
+      - 3000:3000/tcp
+    # networks:
+    #   - main
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      API_URL: main
+      API_PORT: 3000
     ports:
       - 8080:8080/tcp
-    environment:
-      PORT: 8080
-      WORKSPACE: /workplace/workplace
     volumes:
-      - /Volumes/Unix:/workplace
+      # - .:/usr/src/app:ro
+      - ./web:/usr/src/app:rw
+
+    # command: >
+    #   sh -c '
+    #   echo 'Rebuilding node-sass...' &&
+    #   npm rebuild node-sass --force &&
+    #   npm run dev
+    #   '
+
+    # networks:
+    #   - main
+
+    # An example of using a string to replace
+    # the default CMD pragma in the docker build.
+    # command: >
+    #   sh -c '
+    #   if test -d node_modules; then
+    #     echo 'node_modules exists'
+    #   else
+    #     cp -a /tmp/node_modules /usr/src/app/web
+    #   fi &&
+    #   npm install &&
+    #   /usr/local/bin/node ./index.js
+    #   '
+
+
+# networks:
+#   main:

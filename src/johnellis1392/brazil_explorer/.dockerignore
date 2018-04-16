@@ -2,6 +2,9 @@
 /*.iml
 /.gitignore
 
+/web
+/main
+
 /.dockerignore
-docker-compose.yaml
-Dockerfile
+/docker-compose.yaml
+/Dockerfile
