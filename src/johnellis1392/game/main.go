@@ -322,9 +322,17 @@ func simpleExample2() {
 
 	w.MakeContextCurrent()
 
-	gl.ClearColor(0.0, 0.0, 1.0, 1.0)
+	// Need to Re-Init GL after changing Context
+	if err = gl.Init(); err != nil {
+		panic(err)
+	}
+
+	gl.ClearColor(1.0, 0.0, 0.0, 0.5)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
 
 	for !w.ShouldClose() {
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+
 		w.SwapBuffers()
 		glfw.PollEvents()
 	}
