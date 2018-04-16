@@ -18,7 +18,8 @@ import (
 // #include <stdlib.h>
 import "C"
 
-const vertexSource = `//#version 120 // OpenGL 2.1.
+const vertexSource = `
+#version 120 // OpenGL 2.1.
 //#version 100 // WebGL.
 
 attribute vec3 aVertexPosition;
@@ -31,7 +32,8 @@ void main() {
 }
 `
 
-const fragmentSource = `//#version 120 // OpenGL 2.1.
+const fragmentSource = `
+#version 120 // OpenGL 2.1.
 //#version 100 // WebGL.
 
 void main() {
@@ -87,13 +89,13 @@ func GetString(n uint32) string {
 
 func GetShaderInfoLog(s uint32) string {
 	var logLength int32
-	gl.GetShaderiv(uint32(s), gl.INFO_LOG_LENGTH, &logLength)
+	gl.GetShaderiv(s, gl.INFO_LOG_LENGTH, &logLength)
 	if logLength == 0 {
-		return ""
+		return "[no log found]"
 	}
 
 	logBuffer := make([]uint8, logLength)
-	gl.GetShaderInfoLog(uint32(s), logLength, nil, &logBuffer[0])
+	gl.GetShaderInfoLog(s, logLength, nil, &logBuffer[0])
 	return GoString(&logBuffer[0])
 }
 
@@ -101,7 +103,7 @@ func GetProgramInfoLog(p uint32) string {
 	var logLength int32
 	gl.GetProgramiv(p, gl.INFO_LOG_LENGTH, &logLength)
 	if logLength == 0 {
-		return ""
+		return "[no log found]"
 	}
 
 	logBuffer := make([]uint8, logLength)
@@ -110,8 +112,7 @@ func GetProgramInfoLog(p uint32) string {
 }
 
 func LoadShader(typ uint32, src string) (uint32, error) {
-	// shader := gl.CreateShader(typ)
-	shader := gl.CreateShader(uint32(typ))
+	shader := gl.CreateShader(typ)
 	if shader == 0 {
 		return 0, fmt.Errorf("glutil: could not create shader (type %v)", typ)
 	}
@@ -127,10 +128,10 @@ func LoadShader(typ uint32, src string) (uint32, error) {
 	gl.GetShaderiv(shader, uint32(typ), &shaderi)
 	if shaderi == 0 {
 		defer gl.DeleteShader(shader)
-		return 0, fmt.Errorf("shader compile: %s", GetShaderInfoLog(shader))
+		return 0, fmt.Errorf("shader compile: %q", GetShaderInfoLog(shader))
 	}
 
-	return 0, nil
+	return shader, nil
 }
 
 func CreateProgram(vs, fs string) (uint32, error) {
@@ -172,9 +173,19 @@ func Terminate() {
 	runtime.UnlockOSThread()
 }
 
+func errcheck2() {
+	if glerr := gl.GetError(); glerr != 0 {
+		fmt.Printf("Found GL Error: %q\n", glerr)
+	} else {
+		fmt.Printf("No GL Error Yet...")
+	}
+}
+
 func goglTest() error {
+	var err error
+
 	// Initialize GL
-	err := glfw.Init()
+	err = glfw.Init()
 	if err != nil {
 		return err
 	}
@@ -190,7 +201,11 @@ func goglTest() error {
 	}
 
 	w.MakeContextCurrent()
-	//dumpGLConfig()
+	if err = gl.Init(); err != nil {
+		return err
+	}
+
+	dumpGLConfig()
 
 	// Set Cursor Change-Listener
 	cursor := [2]float32{200, 200}
@@ -216,10 +231,11 @@ func goglTest() error {
 	red, green, blue, alpha = 0.8, 0.3, 0.01, 1
 	gl.ClearColor(red, green, blue, alpha)
 
+	fmt.Printf("Check 1\n")
 	// Create and Set Active a new Program using our custom Shaders
 	program, err := CreateProgram(vertexSource, fragmentSource)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	gl.ValidateProgram(program)
@@ -257,8 +273,10 @@ func goglTest() error {
 	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, stride, offset)
 
 	// Check for Errors
-	if err := gl.GetError(); err != 0 {
-		return fmt.Errorf("gl error: %v", err)
+	if glerr := gl.GetError(); glerr != 0 {
+		return fmt.Errorf("gl error: %v", glerr)
+	} else {
+		fmt.Printf("No Errors Found...\n")
 	}
 
 	// Main Render Loop
@@ -347,5 +365,6 @@ func main() {
 	// }
 
 	// simpleExample()
+
 	simpleExample2()
 }
