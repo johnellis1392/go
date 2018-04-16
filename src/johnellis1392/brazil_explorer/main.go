@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"johnellis1392/brazil_explorer/routes"
 	"log"
 	"net/http"
 
@@ -10,8 +11,13 @@ import (
 
 func newRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
-	r.Handle("/api", NewAPIRouter())
-	r.Handle("/assets", NewStaticAssetRouter())
+	r.Handle("/api", routes.NewAPIRouter())
+	r.Handle("/assets", routes.NewStaticAssetRouter())
+
+	// r.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
+	// 	res.Write([]byte("base: Hello, World!"))
+	// })
+
 	return r
 }
 
@@ -20,6 +26,6 @@ func main() {
 	addr := c.AddressString()
 	r := newRouter()
 
-	fmt.Printf("Listening on %s...\n", addr)
+	fmt.Printf("Listening on \"%s\"...\n", addr)
 	log.Fatal(http.ListenAndServe(addr, r))
 }

@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -65,7 +66,8 @@ func (p Package) Name() string {
 
 func init() {
 	// Setup Configuration Variables
-	WORKSPACE = getenvOrElse("WORKSPACE", DEFAULT_WORKSPACE)
+	// WORKSPACE = getenvOrElse("WORKSPACE", DEFAULT_WORKSPACE)
+	WORKSPACE = ""
 }
 
 func ListWorkspaces(res http.ResponseWriter, req *http.Request) {
