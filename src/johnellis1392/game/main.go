@@ -87,114 +87,102 @@ func GetString(n uint32) string {
 
 // type Shader uint32
 
-func GetShaderInfoLog(s uint32) string {
-	var logLength int32
-	gl.GetShaderiv(s, gl.INFO_LOG_LENGTH, &logLength)
-	if logLength == 0 {
-		return "[no log found]"
-	}
+// func GetShaderInfoLog(s uint32) string {
+// 	var logLength int32
+// 	gl.GetShaderiv(s, gl.INFO_LOG_LENGTH, &logLength)
+// 	if logLength == 0 {
+// 		return "[no log found]"
+// 	}
+//
+// 	logBuffer := make([]uint8, logLength)
+// 	gl.GetShaderInfoLog(s, logLength, nil, &logBuffer[0])
+// 	return GoString(&logBuffer[0])
+// }
 
-	logBuffer := make([]uint8, logLength)
-	gl.GetShaderInfoLog(s, logLength, nil, &logBuffer[0])
-	return GoString(&logBuffer[0])
-}
+// func GetProgramInfoLog(p uint32) string {
+// 	var logLength int32
+// 	gl.GetProgramiv(p, gl.INFO_LOG_LENGTH, &logLength)
+// 	if logLength == 0 {
+// 		return "[no log found]"
+// 	}
+//
+// 	logBuffer := make([]uint8, logLength)
+// 	gl.GetProgramInfoLog(p, logLength, nil, &logBuffer[0])
+// 	return GoString(&logBuffer[0])
+// }
 
-func GetProgramInfoLog(p uint32) string {
-	var logLength int32
-	gl.GetProgramiv(p, gl.INFO_LOG_LENGTH, &logLength)
-	if logLength == 0 {
-		return "[no log found]"
-	}
+// func LoadShader(typ uint32, src string) (uint32, error) {
+// 	shader := gl.CreateShader(typ)
+// 	if shader == 0 {
+// 		return 0, fmt.Errorf("glutil: could not create shader (type %v)", typ)
+// 	}
+//
+// 	glsource, free := gl.Strs(src + "\x00")
+// 	gl.ShaderSource(shader, 1, glsource, nil)
+// 	free()
+//
+// 	gl.CompileShader(shader)
+//
+// 	var shaderi int32
+// 	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &shaderi)
+// 	if shaderi == 0 {
+// 		defer gl.DeleteShader(shader)
+// 		return 0, fmt.Errorf("%s", GetShaderInfoLog(shader))
+// 	}
+//
+// 	return shader, nil
+// }
 
-	logBuffer := make([]uint8, logLength)
-	gl.GetProgramInfoLog(p, logLength, nil, &logBuffer[0])
-	return GoString(&logBuffer[0])
-}
-
-func LoadShader(typ uint32, src string) (uint32, error) {
-	shader := gl.CreateShader(typ)
-	if shader == 0 {
-		return 0, fmt.Errorf("glutil: could not create shader (type %v)", typ)
-	}
-
-	// gl.ShaderSource(shader, src)
-	glsource, free := gl.Strs(src + "\x00")
-	gl.ShaderSource(shader, 1, glsource, nil)
-	free()
-
-	gl.CompileShader(shader)
-
-	var shaderi int32
-	gl.GetShaderiv(shader, uint32(typ), &shaderi)
-	if shaderi == 0 {
-		defer gl.DeleteShader(shader)
-		return 0, fmt.Errorf("shader compile: %q", GetShaderInfoLog(shader))
-	}
-
-	return shader, nil
-}
-
-func CreateProgram(vs, fs string) (uint32, error) {
-	p := gl.CreateProgram()
-	if p == 0 {
-		return 0, fmt.Errorf("glutil: no programs available")
-	}
-
-	vshader, err := LoadShader(gl.VERTEX_SHADER, vs)
-	if err != nil {
-		return 0, err
-	}
-
-	fshader, err := LoadShader(gl.FRAGMENT_SHADER, fs)
-	if err != nil {
-		gl.DeleteShader(vshader)
-		return 0, err
-	}
-
-	gl.AttachShader(p, vshader)
-	gl.AttachShader(p, fshader)
-	gl.LinkProgram(p)
-
-	gl.DeleteShader(vshader)
-	gl.DeleteShader(fshader)
-
-	var programi int32
-	gl.GetProgramiv(p, gl.LINK_STATUS, &programi)
-	if programi == 0 {
-		defer gl.DeleteProgram(p)
-		return 0, fmt.Errorf("glutil: %s", GetProgramInfoLog(p))
-	}
-
-	return p, nil
-}
+// func CreateProgram(vs, fs string) (uint32, error) {
+// 	p := gl.CreateProgram()
+// 	if p == 0 {
+// 		return 0, fmt.Errorf("glutil: no programs available")
+// 	}
+//
+// 	vshader, err := LoadShader(gl.VERTEX_SHADER, vs)
+// 	if err != nil {
+// 		return 0, fmt.Errorf("an error occurred while processing vertex shader: %s", err.Error())
+// 	}
+//
+// 	fshader, err := LoadShader(gl.FRAGMENT_SHADER, fs)
+// 	if err != nil {
+// 		gl.DeleteShader(vshader)
+// 		return 0, fmt.Errorf("an error occurred while processing fragment shader: %s", err.Error())
+// 	}
+//
+// 	gl.AttachShader(p, vshader)
+// 	gl.AttachShader(p, fshader)
+// 	gl.LinkProgram(p)
+//
+// 	gl.DeleteShader(vshader)
+// 	gl.DeleteShader(fshader)
+//
+// 	var programi int32
+// 	gl.GetProgramiv(p, gl.LINK_STATUS, &programi)
+// 	if programi == 0 {
+// 		defer gl.DeleteProgram(p)
+// 		return 0, fmt.Errorf("glutil: %s", GetProgramInfoLog(p))
+// 	}
+//
+// 	return p, nil
+// }
 
 func Terminate() {
 	glfw.Terminate()
 	runtime.UnlockOSThread()
 }
 
-func errcheck2() {
-	if glerr := gl.GetError(); glerr != 0 {
-		fmt.Printf("Found GL Error: %q\n", glerr)
-	} else {
-		fmt.Printf("No GL Error Yet...")
-	}
-}
-
 func goglTest() error {
 	var err error
 
 	// Initialize GL
-	err = glfw.Init()
-	if err != nil {
+	if err = glfw.Init(); err != nil {
 		return err
 	}
-	//defer glfw.Terminate()
 	defer Terminate()
 
-	var windowSize = [2]int{640, 480}
-	//glfw.WindowHint(glfw.Samples, 8)
 	glfw.WindowHint(glfw.Hint(glfw.Samples), 8)
+	var windowSize = [2]int{640, 480}
 	w, err := glfw.CreateWindow(windowSize[0], windowSize[1], "Test Title", nil, nil)
 	if err != nil {
 		return err
@@ -231,12 +219,12 @@ func goglTest() error {
 	red, green, blue, alpha = 0.8, 0.3, 0.01, 1
 	gl.ClearColor(red, green, blue, alpha)
 
-	fmt.Printf("Check 1\n")
 	// Create and Set Active a new Program using our custom Shaders
 	program, err := CreateProgram(vertexSource, fragmentSource)
 	if err != nil {
 		return err
 	}
+	// program := CreateProgram()
 
 	gl.ValidateProgram(program)
 
@@ -268,9 +256,7 @@ func goglTest() error {
 	// Setup Vertex Attribute Arrays
 	vertexPositionAttrib := uint32(gl.GetAttribLocation(program, Str("aVertexPosition\x00")))
 	gl.EnableVertexAttribArray(vertexPositionAttrib)
-	var stride int32 = 0
-	var offset = gl.PtrOffset(0)
-	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, stride, offset)
+	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
 
 	// Check for Errors
 	if glerr := gl.GetError(); glerr != 0 {
@@ -306,65 +292,64 @@ func goglTest() error {
 	return nil
 }
 
-func simpleExample() {
-	err := glfw.Init()
-	if err != nil {
-		panic(err)
-	}
-	defer glfw.Terminate()
-
-	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	w.MakeContextCurrent()
-
-	for !w.ShouldClose() {
-		w.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func simpleExample2() {
-	err := glfw.Init()
-	if err != nil {
-		panic(err)
-	}
-	defer glfw.Terminate()
-
-	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	w.MakeContextCurrent()
-
-	// Need to Re-Init GL after changing Context
-	if err = gl.Init(); err != nil {
-		panic(err)
-	}
-
-	gl.ClearColor(1.0, 0.0, 0.0, 0.5)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
-
-	for !w.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		w.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
+// func simpleExample() {
+// 	err := glfw.Init()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer glfw.Terminate()
+//
+// 	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	w.MakeContextCurrent()
+//
+// 	for !w.ShouldClose() {
+// 		w.SwapBuffers()
+// 		glfw.PollEvents()
+// 	}
+// }
+//
+// func simpleExample2() {
+// 	err := glfw.Init()
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer glfw.Terminate()
+//
+// 	w, err := glfw.CreateWindow(640, 480, "Testing", nil, nil)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+//
+// 	w.MakeContextCurrent()
+//
+// 	// Need to Re-Init GL after changing Context
+// 	if err = gl.Init(); err != nil {
+// 		panic(err)
+// 	}
+//
+// 	gl.ClearColor(1.0, 0.0, 0.0, 0.5)
+// 	gl.Clear(gl.COLOR_BUFFER_BIT)
+//
+// 	for !w.ShouldClose() {
+// 		gl.Clear(gl.COLOR_BUFFER_BIT)
+//
+// 		w.SwapBuffers()
+// 		glfw.PollEvents()
+// 	}
+// }
 
 func main() {
 	// goxjsTest()
 
-	// err := goglTest()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	if err := goglTest(); err != nil {
+		panic(err)
+	}
 
 	// simpleExample()
 
-	simpleExample2()
+	// simpleExample2()
 }
