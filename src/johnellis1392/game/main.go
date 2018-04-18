@@ -237,7 +237,12 @@ func goglTest2() error {
 	// Setup Vertex Attribute Arrays
 	vertexPositionAttrib := uint32(gl.GetAttribLocation(program.ID, Str("aVertexPosition\x00")))
 	gl.EnableVertexAttribArray(vertexPositionAttrib)
-	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
+	if glerr := gl.GetError(); glerr != 0 {
+		return fmt.Errorf("gl error: %v", glerr)
+	}
+
+	// gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
+	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, nil)
 
 	// Main Render Loop
 	for !window.ShouldClose() {
@@ -264,6 +269,7 @@ func goglTest2() error {
 
 		// Poll for GL Interaction Events
 		window.PollEvents()
+
 	}
 
 	return nil
