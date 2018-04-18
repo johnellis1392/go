@@ -17,6 +17,7 @@ type GameObject interface {
 	Init() error
 	Update(c GameContext, t time.Time)
 	Render(c GLContext)
+	Destroy() error
 }
 
 type GLPos struct {

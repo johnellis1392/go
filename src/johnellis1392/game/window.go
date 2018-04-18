@@ -66,6 +66,15 @@ func CreateWindow() (*Window, error) {
 	return window, nil
 }
 
+func (w *Window) Context() GLContext {
+	return context{
+		// program: w.program,
+		buffers:  []uint32{},
+		attribs:  []uint32{},
+		uniforms: []uint32{},
+	}
+}
+
 func (w *Window) PollEvents() {
 	glfw.PollEvents()
 }
