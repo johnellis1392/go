@@ -1,83 +1,38 @@
 package main
 
 import (
+	"johnellis1392/game/gl"
+	"johnellis1392/game/math"
 	"time"
-
-	"github.com/go-gl/gl/v2.1/gl"
 )
-
-type GameState struct {
-	objects []GameObject
-	time    time.Time
-}
-
-type GameContext interface{}
 
 type GameObject interface {
 	Init() error
-	Update(c GameContext, t time.Time)
-	Render(c GLContext)
+	Update(t time.Time)
+	Render(c gl.Context)
 	Destroy() error
 }
 
 type GLPos struct {
-	Pos, Rot, Scale mat4
+	Pos, Rot, Scale math.Mat4
 }
 
-type Cube struct {
-	GLPos
-	Vertices []vec3
-}
-
-type GLContext interface {
-	Draw()
-	CreateBuffer() uint32
-	GetAttrib(name string) uint32
-	// GetUniform() uint32
-}
-
-type context struct {
-	program  Program
-	buffers  []uint32
-	attribs  []uint32
-	uniforms []uint32
-}
-
-func (c context) Draw() {
-	// TODO: Drawing Logic Goes Here
-}
-
-func (c context) CreateBuffer() uint32 {
-	var buffer uint32
-	gl.GenBuffers(1, &buffer)
-	c.buffers = append(c.buffers, buffer)
-	return buffer
-}
-
-func (c context) GetAttrib(name string) uint32 {
-	return uint32(gl.GetAttribLocation(c.program.ID, gl.Str(name+"\x00")))
-}
-
-// func (c context) GetUniform() uint32 {
-//
-// }
-
-type stateFn func(context, GameObject) stateFn
+type stateFn func(gl.Context, GameObject) stateFn
 
 type monster struct {
-	pos, rot, scale mat4
+	pos, rot, scale math.Mat4
 	state           stateFn
 }
 
-func monsterAttack(c context, g GameObject) stateFn {
+func monsterAttack(c gl.Context, g GameObject) stateFn {
 	return nil
 }
 
-func monsterIdle(c context, g GameObject) stateFn {
+func monsterIdle(c gl.Context, g GameObject) stateFn {
 	return nil
 }
 
-func monsterInit(c context, g GameObject) stateFn {
+func monsterInit(c gl.Context, g GameObject) stateFn {
 	// switch m := g.(monster); {
 	// case m.Senses(c.GetPlayer()):
 	// 	return monsterAttack
@@ -92,11 +47,11 @@ func (m monster) Update(t time.Time) {
 }
 
 type player struct {
-	pos, rot, scale mat4 // Position, Rotation & Scale
+	pos, rot, scale math.Mat4 // Position, Rotation & Scale
 	state           stateFn
 }
 
-func playerInit(c context, p GameObject) stateFn {
+func playerInit(c gl.Context, p GameObject) stateFn {
 	return nil
 }
 
