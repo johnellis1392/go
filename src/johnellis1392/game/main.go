@@ -179,6 +179,24 @@ func Terminate() {
 // 	return nil
 // }
 
+type Triangle struct {
+	GLPos
+	Vertices [3]vec3
+}
+
+var triangle = Triangle{
+	GLPos: GLPos{
+		Pos:   mat4Id(),
+		Rot:   mat4Id(),
+		Scale: mat4Id(),
+	},
+	Vertices: [3]vec3{
+		{0, 0, 0},
+		{300, 100, 0},
+		{0, 100, 0},
+	},
+}
+
 func goglTest2() error {
 	var err error
 
@@ -209,10 +227,6 @@ func goglTest2() error {
 		return err
 	}
 
-	if err := program.Validate(); err != nil {
-		return err
-	}
-
 	// Set Current Program
 	program.Use()
 
@@ -221,7 +235,6 @@ func goglTest2() error {
 	mvMatrixUniform := gl.GetUniformLocation(program.ID, Str("uMVMatrix\x00"))
 
 	// Load Triangle Vertex Data into Shaders
-	// triangleVertexPositionBuffer := gl.CreateBuffer()
 	var triangleVertexPositionBuffer uint32
 	gl.GenBuffers(1, &triangleVertexPositionBuffer)
 	gl.BindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
@@ -235,14 +248,16 @@ func goglTest2() error {
 	var itemCount int32 = 3
 
 	// Setup Vertex Attribute Arrays
-	vertexPositionAttrib := uint32(gl.GetAttribLocation(program.ID, Str("aVertexPosition\x00")))
-	gl.EnableVertexAttribArray(vertexPositionAttrib)
+	// vertexPositionAttrib := uint32(gl.GetAttribLocation(program.ID, gl.Str("aVertexPosition\x00")))
+	vertexPositionAttrib := gl.GetAttribLocation(program.ID, gl.Str("aVertexPosition\x00"))
+	fmt.Println(" *** vertexPositionAttrib:", vertexPositionAttrib)
+	gl.EnableVertexAttribArray(uint32(vertexPositionAttrib))
 	if glerr := gl.GetError(); glerr != 0 {
 		return fmt.Errorf("gl error: %v", glerr)
 	}
 
 	// gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
-	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, nil)
+	gl.VertexAttribPointer(uint32(vertexPositionAttrib), itemSize, gl.FLOAT, false, 0, nil)
 
 	// Main Render Loop
 	for !window.ShouldClose() {

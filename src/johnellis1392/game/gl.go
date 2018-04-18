@@ -34,23 +34,7 @@ func (p Program) Use() {
 	gl.UseProgram(p.ID)
 }
 
-func (p Program) Validate() error {
-	if p.ID == 0 {
-		return fmt.Errorf("error: gl returned invalid null pointer when creating program: Program.ID = 0")
-	}
-
-	gl.ValidateProgram(p.ID)
-
-	var status int32
-	gl.GetProgramiv(p.ID, gl.VALIDATE_STATUS, &status)
-	if status != gl.TRUE {
-		return fmt.Errorf("%s", p.InfoLog())
-	}
-
-	return nil
-}
-
-func (p Program) AddShader(shaderType uint32, src string) {
+func (p *Program) AddShader(shaderType uint32, src string) {
 	s := CreateShader(shaderType, src)
 	p.Shaders = append(p.Shaders, s)
 }
@@ -74,13 +58,28 @@ func (p Program) Delete() {
 	gl.DeleteProgram(p.ID)
 }
 
+func (p Program) validate() error {
+	if p.ID == 0 {
+		return fmt.Errorf("error: gl returned invalid null pointer when creating program: Program.ID = 0")
+	}
+
+	gl.ValidateProgram(p.ID)
+
+	var status int32
+	gl.GetProgramiv(p.ID, gl.VALIDATE_STATUS, &status)
+	if status != gl.TRUE {
+		return fmt.Errorf("%s", p.InfoLog())
+	}
+
+	return nil
+}
+
 func (p Program) link() error {
 	gl.LinkProgram(p.ID)
 
 	var programi int32
 	gl.GetProgramiv(p.ID, gl.LINK_STATUS, &programi)
 	if programi == 0 {
-		// defer gl.DeleteProgram(p)
 		defer p.Delete()
 		return fmt.Errorf("failed to link program: %s", p.InfoLog())
 	}
@@ -90,13 +89,25 @@ func (p Program) link() error {
 
 func (p Program) Compile() error {
 	var err error
+	fmt.Println("Compiling:", p.Shaders)
 	for _, s := range p.Shaders {
+		fmt.Println("Compiling Shader:", s.ID, s.file)
 		if err = s.Compile(); err != nil {
 			defer p.Delete()
 			return err
 		}
+		gl.AttachShader(p.ID, s.ID)
 	}
-	return p.link()
+
+	if err = p.link(); err != nil {
+		return err
+	}
+
+	if err = p.validate(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type Shader struct {

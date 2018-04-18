@@ -2,7 +2,30 @@ package main
 
 import "fmt"
 
+type vec3 [3]float32
+
+func (v vec3) dot(v2 vec3) float32 {
+	return v[0]*v2[0] + v[1]*v2[1] + v[2]*v2[2]
+}
+
+func (v vec3) plus(v2 vec3) vec3 {
+	return vec3{
+		v[0] + v2[0],
+		v[1] + v2[1],
+		v[2] + v2[2],
+	}
+}
+
 type mat4 [4][4]float32
+
+func mat4Id() mat4 {
+	return mat4{
+		{1, 0, 0, 0},
+		{0, 1, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1},
+	}
+}
 
 func (m mat4) mul(m2 mat4) mat4 {
 	var mres mat4
