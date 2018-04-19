@@ -2,17 +2,14 @@ package main
 
 import (
 	"C"
-	"encoding/binary"
 	"fmt"
 	"johnellis1392/game/gl"
 	"johnellis1392/game/math"
 	"runtime"
 	"time"
-)
-import (
+
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/goxjs/glfw"
-	"golang.org/x/mobile/exp/f32"
 )
 
 const (
@@ -39,12 +36,18 @@ func Terminate() {
 	runtime.UnlockOSThread()
 }
 
+// Test Triangle implements GameObject interface
+var _ GameObject = (Triangle*)(nil)
+
 type Triangle struct {
-	GL                   GLPos
-	Vertices             [3]math.Vec3
-	Program              gl.Program
-	VertexPositionBuffer uint32
-	VertexPositionAttrib uint32
+	GL       GLPos
+	Vertices [3]math.Vec3
+	Program  gl.Program
+	// VertexPositionBuffer uint32
+	// VertexPositionAttrib uint32
+
+	VertexBuffer gl.Buffer
+	VertexAttrib gl.Attrib
 }
 
 func newTriangle(p gl.Program) Triangle {
@@ -59,9 +62,9 @@ func newTriangle(p gl.Program) Triangle {
 			{300, 100, 0},
 			{0, 100, 0},
 		},
-		Program:              p,
-		VertexPositionBuffer: 0, // Null for Now
-		VertexPositionAttrib: 0,
+		Program: p,
+		// VertexPositionBuffer: 0, // Null for Now
+		// VertexPositionAttrib: 0,
 	}
 }
 
@@ -76,33 +79,46 @@ func spread(vs [3]math.Vec3) []float32 {
 }
 
 // Init Init
+// func (t Triangle) Init(c gl.Context) error {
+// 	// TODO:
+// 	// * Bind vertex attrib array for points
+// 	// * Bind Program / Bind Shaders
+// 	// * Create Buffer & Load with Vertices
+// 	// return nil
+//
+// 	// Create Triangle Vertex Buffer
+// 	var triangleVertexPositionBuffer uint32
+// 	gl.GenBuffers(1, &triangleVertexPositionBuffer)
+// 	gl.BindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
+// 	t.VertexPositionBuffer = triangleVertexPositionBuffer
+//
+// 	// Load Triangle Vertices
+// 	vertices := f32.Bytes(binary.LittleEndian, spread(t.Vertices)...)
+// 	gl.BufferData(gl.ARRAY_BUFFER, int(len(vertices)), gl.Ptr(&vertices[0]), gl.STATIC_DRAW)
+// 	var itemSize int32 = 3
+//
+// 	// Setup Vertex Attribute Arrays
+// 	vertexPositionAttrib := uint32(gl.GetAttribLocation(t.Program.ID, gl.Str("aVertexPosition\x00")))
+// 	gl.EnableVertexAttribArray(vertexPositionAttrib)
+// 	if glerr := gl.GetError(); glerr != 0 {
+// 		return fmt.Errorf("gl error: %v", glerr)
+// 	}
+//
+// 	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
+// 	t.VertexPositionAttrib = vertexPositionAttrib
+//
+// 	return nil
+// }
+
+// Init initializes the Triangle's data in GL.
 func (t Triangle) Init(c gl.Context) error {
-	// TODO:
-	// * Bind vertex attrib array for points
-	// * Bind Program / Bind Shaders
-	// * Create Buffer & Load with Vertices
-	// return nil
 
-	// Create Triangle Vertex Buffer
-	var triangleVertexPositionBuffer uint32
-	gl.GenBuffers(1, &triangleVertexPositionBuffer)
-	gl.BindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer)
-	t.VertexPositionBuffer = triangleVertexPositionBuffer
+	t.VertexBuffer = c.CreateBuffer(gl.ArrayBuffer)
+	t.VertexBuffer.Bind()
 
-	// Load Triangle Vertices
-	vertices := f32.Bytes(binary.LittleEndian, spread(t.Vertices)...)
-	gl.BufferData(gl.ARRAY_BUFFER, int(len(vertices)), gl.Ptr(&vertices[0]), gl.STATIC_DRAW)
-	var itemSize int32 = 3
-
-	// Setup Vertex Attribute Arrays
-	vertexPositionAttrib := uint32(gl.GetAttribLocation(t.Program.ID, gl.Str("aVertexPosition\x00")))
-	gl.EnableVertexAttribArray(vertexPositionAttrib)
-	if glerr := gl.GetError(); glerr != 0 {
-		return fmt.Errorf("gl error: %v", glerr)
-	}
-
-	gl.VertexAttribPointer(vertexPositionAttrib, itemSize, gl.FLOAT, false, 0, gl.PtrOffset(0))
-	t.VertexPositionAttrib = vertexPositionAttrib
+	t.VertexAttrib = c.GetAttrib("aVertexPosition")
+	t.VertexAttrib.Enable()
+	t.VertexAttrib.Bind(len(t.Vertices))
 
 	return nil
 }
@@ -115,7 +131,8 @@ func (t Triangle) Update(dt time.Time) {
 // Render Render
 func (t Triangle) Render(c gl.Context) {
 	// Call GLDrawArrays
-	gl.DrawArrays(gl.TRIANGLES, int32(0), int32(len(t.Vertices)))
+	// gl.DrawArrays(gl.TRIANGLES, int32(0), int32(len(t.Vertices)))
+	c.Draw(len(t.Vertices))
 }
 
 // Destroy Destroy
@@ -127,41 +144,38 @@ func goglTest2() error {
 	var err error
 
 	// Initialize GL
-	if err = glfw.Init(); err != nil {
+	if err = gl.Init(); err != nil {
 		return err
 	}
-	defer Terminate()
+	defer gl.Terminate()
 
-	window, err := CreateWindow()
+	window, err := gl.CreateWindow()
 	if err != nil {
 		return err
 	}
 
-	// Set GL Context & Initialize GL
 	window.MakeContextCurrent()
-
-	// Clear Screen Color
-	window.Clear(Color{0.8, 0.3, 0.01, 1})
-
-	// Create and Set Active a new Program using our custom Shaders
-	program := CreateProgram()
+	var backgroundColor = math.Color{R: 0.8, G: 0.3, B: 0.01, A: 1}
+	window.Clear(backgroundColor)
+	program := gl.CreateProgram()
 
 	// Compile Program
-	program.AddShader(gl.VERTEX_SHADER, vertexShaderLoc)
-	program.AddShader(gl.FRAGMENT_SHADER, fragmentShaderLoc)
+	program.AddShader(gl.VertexShader, vertexShaderLoc)
+	program.AddShader(gl.FragmentShader, fragmentShaderLoc)
 	if err := program.Compile(); err != nil {
 		return err
 	}
 
-	// Set Current Program
 	program.Use()
-
-	// Get Uniform Locations
-	pMatrixUniform := gl.GetUniformLocation(program.ID, Str("uPMatrix\x00"))
-	mvMatrixUniform := gl.GetUniformLocation(program.ID, Str("uMVMatrix\x00"))
 
 	var context gl.Context
 	context = window.Context()
+
+	// Get Uniform Locations
+	// pMatrixUniform := gl.GetUniformLocation(program.ID, Str("uPMatrix\x00"))
+	// mvMatrixUniform := gl.GetUniformLocation(program.ID, Str("uMVMatrix\x00"))
+	pMatrixUniform := context.GetUniform("uPMatrix")
+	mvMatrixUniform := context.GetUniform("uMVMatrix")
 
 	// Create Triangle
 	t := newTriangle(program)
@@ -176,11 +190,11 @@ func goglTest2() error {
 	for !window.ShouldClose() {
 
 		// Clear
-		// TODO: Replace this with API
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		// gl.Clear(gl.COLOR_BUFFER_BIT)
+		window.Clear(backgroundColor)
 
 		// Get Perspective Transformation
-		ww, wh := float32(window.Size.Width), float32(window.Size.Height)
+		ww, wh := float32(window.Size.W), float32(window.Size.H)
 		pMatrix := mgl32.Ortho2D(0, ww, wh, 0)
 
 		// Get Model View Matrix
@@ -188,8 +202,10 @@ func goglTest2() error {
 		mvMatrix := mgl32.Translate3D(cx, cy, 0)
 
 		// Load Uniform Values for Render
-		gl.UniformMatrix4fv(pMatrixUniform, int32(len(pMatrix)/(4*4)), false, &pMatrix[0])
-		gl.UniformMatrix4fv(mvMatrixUniform, int32(len(mvMatrix)/(4*4)), false, &mvMatrix[0])
+		// gl.UniformMatrix4fv(pMatrixUniform, int32(len(pMatrix)/(4*4)), false, &pMatrix[0])
+		// gl.UniformMatrix4fv(mvMatrixUniform, int32(len(mvMatrix)/(4*4)), false, &mvMatrix[0])
+		pMatrixUniform.Set(pMatrix)
+		mvMatrixUniform.Set(mvMatrix)
 
 		// gl.DrawArrays(gl.TRIANGLES, int32(0), itemCount)
 		// Render Triangle

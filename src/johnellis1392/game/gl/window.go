@@ -66,7 +66,7 @@ func CreateWindow() (*Window, error) {
 // and returns it.
 func (w *Window) Context() Context {
 	return context{
-		// program: w.program,
+		// program:  w.program,
 		// buffers:  []uint32{},
 		// attribs:  []uint32{},
 		// uniforms: []uint32{},

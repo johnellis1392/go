@@ -39,26 +39,15 @@ func GetString(n Enum) string {
 // string object into a *uint8 / byte array.
 type CString struct {
 	val *uint8
-	// free func()
 }
 
 // AsCString converts a Native-Golang string into a GL-Compatible string.
 func AsCString(s string) CString {
-	header := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	ss := s // Make Copy of String Value
+	header := (*reflect.StringHeader)(unsafe.Pointer(&ss))
 	val := (*uint8)(unsafe.Pointer(header.Data))
-	return CString{
-		val: val,
-		// free: free,
-	}
+	return CString{val}
 }
-
-// Free frees the memory associated with the underlying string object pointed
-// to by c.val
-// func (c CString) Free() {
-// 	if c.free != nil {
-// 		c.free()
-// 	}
-// }
 
 // String converts the given CString object into a Native Golang string.
 func (c CString) String() string {
