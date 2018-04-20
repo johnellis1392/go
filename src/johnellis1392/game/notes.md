@@ -9,6 +9,7 @@ about Game Programming & OpenGL.
 * [Wikipedia Explanation of Scene Graphs](https://en.wikipedia.org/wiki/Scene_graph)
 * [Cowboy Programming - Evolve Your Hierarchy](http://cowboyprogramming.com/2007/01/05/evolve-your-heirachy/)
 * [Discussion about Game Object Hierarchies](https://stackoverflow.com/questions/764824/best-way-to-organize-entities-in-a-game)
+* [GLFW Input Handling Guide](http://www.glfw.org/docs/latest/input_guide.html)
 
 
 ## TODOs
