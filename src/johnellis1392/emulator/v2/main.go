@@ -90,6 +90,21 @@ type status struct {
 	c bool // Carry Flag
 }
 
+func (s status) carry() byte {
+	if s.c {
+		return 1
+	}
+	return 0
+}
+
+func (s *status) setCarry(i byte) {
+	if i != 0 {
+		s.c = true
+		return
+	}
+	s.c = false
+}
+
 type cpu struct {
 	ac  byte   // Accumulator
 	xr  byte   // X Index Register
@@ -98,16 +113,21 @@ type cpu struct {
 	pc  byte   // Program Counter
 	sp  byte   // Stack Pointer
 	clk uint64 // Clock Timer
+
+	inst byte // Current Instruction
 }
 
-type mem [memSize]byte
+func (c *cpu) tick() {
+	c.clk++
+}
 
-type rom []byte
+type page [memSize]byte
+
+type mem [memSize]page
 
 type system struct {
 	cpu
 	mem
-	rom
 }
 
 func (s *system) stopped() bool {
@@ -116,9 +136,13 @@ func (s *system) stopped() bool {
 
 func (s *system) next() byte {
 	pc := int(s.cpu.pc)
-	i := s.rom[pc]
+	i := s.mem[pc]
 	s.cpu.pc++
 	return i
+}
+
+func (s *system) peek() byte {
+	return s.cpu.inst
 }
 
 func newSystem(data []byte) *system {
