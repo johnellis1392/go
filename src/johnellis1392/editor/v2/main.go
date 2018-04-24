@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
 
@@ -34,7 +37,8 @@ const (
 type eventType uint32
 
 const (
-	keyPress eventType = iota
+	errorEvent eventType = iota
+	keyPress
 	keyRepeat
 	keyRelease
 )
@@ -48,6 +52,7 @@ type event struct {
 type node interface {
 	init(event) error
 	handle(event) error
+	render(io.Writer) error
 }
 
 // rootNode ...
@@ -67,6 +72,10 @@ func (n *rootNode) handle(e event) error {
 		n.val = &jsonNode{n, nil}
 	}
 	return n.val.handle(e)
+}
+
+func (n *rootNode) render(w io.Writer) error {
+	return nil
 }
 
 // jsonNode ...
@@ -117,6 +126,10 @@ func (n *jsonNode) handle(e event) error {
 	}
 }
 
+func (n *jsonNode) render(w io.Writer) error {
+	return nil
+}
+
 // objectNode ...
 type objectNode struct {
 	parent node
@@ -145,6 +158,10 @@ func (n *objectNode) handle(e event) error {
 	default:
 		return nil
 	}
+}
+
+func (n *objectNode) render(w io.Writer) error {
+	return nil
 }
 
 // pairNode ...
@@ -179,6 +196,10 @@ func (n *pairNode) handle(e event) error {
 	}
 }
 
+func (n *pairNode) render(w io.Writer) error {
+	return nil
+}
+
 // arrayNode ...
 type arrayNode struct {
 	parent node
@@ -208,6 +229,10 @@ func (n *arrayNode) handle(e event) error {
 	default:
 		return nil
 	}
+}
+
+func (n *arrayNode) render(w io.Writer) error {
+	return nil
 }
 
 // valueNode ...
@@ -252,6 +277,10 @@ func (n *valueNode) handle(e event) error {
 	}
 }
 
+func (n *valueNode) render(w io.Writer) error {
+	return nil
+}
+
 // identNode ...
 type identNode struct {
 	parent node
@@ -281,6 +310,10 @@ func (n *identNode) handle(e event) error {
 	}
 }
 
+func (n *identNode) render(w io.Writer) error {
+	return nil
+}
+
 // stringNode ...
 type stringNode struct {
 	parent node
@@ -304,6 +337,10 @@ func (n *stringNode) handle(e event) error {
 	default:
 		return nil
 	}
+}
+
+func (n *stringNode) render(w io.Writer) error {
+	return nil
 }
 
 // numberNode ...
@@ -331,6 +368,10 @@ func (n *numberNode) handle(e event) error {
 	}
 }
 
+func (n *numberNode) render(w io.Writer) error {
+	return nil
+}
+
 // booleanNode ...
 type booleanNode struct {
 	parent node
@@ -349,6 +390,10 @@ func (n *booleanNode) handle(e event) error {
 	default:
 		return nil
 	}
+}
+
+func (n *booleanNode) render(w io.Writer) error {
+	return nil
 }
 
 // editNode is a parse tree node that allows for user editing
@@ -392,6 +437,10 @@ func (n *editNode) handle(e event) error {
 	}
 }
 
+func (n *editNode) render(w io.Writer) error {
+	return nil
+}
+
 // Uitility Functions
 
 func contains(s string, r rune) bool {
@@ -414,7 +463,59 @@ func isAlphaNumeric(r rune) bool {
 	return contains(alphaNumerics, r)
 }
 
+// editor represents the state of the editor object.
+type editor struct {
+	root   *rootNode
+	node   node
+	events chan event
+}
+
+func newEditor() editor {
+	const chanSize = 10
+	root := &rootNode{nil}
+	return editor{
+		root:   root,
+		node:   root,
+		events: make(chan event, chanSize),
+	}
+}
+
+func (e editor) eventLoop() {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			// e.events <- event{errorEvent, fmt.Sprintf("an error occurred while reading from stdin: %v", err.Error())}
+			e.events <- event{errorEvent, 0}
+			continue
+		}
+
+		e.events <- event{keyPress, rune(input[0])}
+	}
+}
+
+func (e editor) render(w io.Writer) {
+	if err := e.root.render(w); err != nil {
+		w.Write([]byte(err.Error()))
+	}
+}
+
 // Main
 func main() {
-	fmt.Println("Hello, World!")
+	fmt.Println("Starting Editor...")
+	e := newEditor()
+	go e.eventLoop()
+
+	// Main Render Loop
+	for {
+		switch ev := <-e.events; ev.typ {
+		case errorEvent:
+			fmt.Println(ev.val)
+		case keyPress:
+			e.node.handle(ev)
+			e.render(os.Stdout)
+		default:
+			continue
+		}
+	}
 }
