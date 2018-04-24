@@ -34,6 +34,20 @@ const (
 // number := [1-9][0-9]*
 // boolean := "true" | "false"
 
+type commandType uint32
+
+const (
+	cmdInsert commandType = iota
+	cmdDelete
+	cmdUp
+	cmdReplace
+	cmdAppend
+	cmdEnter
+	cmdNext
+	cmdPrev
+	cmdAppendParent
+)
+
 type eventType uint32
 
 const (
@@ -71,7 +85,30 @@ func (n *rootNode) handle(e event) error {
 	if n.val == nil {
 		n.val = &jsonNode{n, nil}
 	}
-	return n.val.handle(e)
+
+	switch e.val {
+	case '\n', '\r':
+		return n.val.handle(e)
+	case 'i':
+		return n.val.handle(e)
+	case 'd':
+		n.val = nil
+		return nil
+	case 'u':
+		return nil
+	case 'r':
+		return nil
+	case 'a':
+		return nil
+	case 'n':
+		return nil
+	case 'p':
+		return nil
+	case 'o':
+		return nil
+	default:
+		return n.val.handle(e)
+	}
 }
 
 func (n *rootNode) render(w io.Writer) error {
@@ -405,6 +442,32 @@ type editNode struct {
 
 var _ node = (*editNode)(nil)
 
+func (n *editNode) insert(r rune) {
+	if n.pos >= uint(len(n.val)) {
+		n.pos = uint(len(n.val)) - 1
+	}
+
+	var result []rune
+	start, end := n.val[:n.pos], n.val[n.pos:]
+	result = append(start, r)
+	result = append(result, end...)
+
+	n.val = result
+	n.pos++
+}
+
+func (n *editNode) delete() {
+	if len(n.val) == 0 {
+		return
+	}
+
+	if n.pos >= uint(len(n.val)) {
+		n.pos = uint(len(n.val))
+	}
+
+	n.val = append(n.val[n.pos:], n.val[n.pos+1:]...)
+}
+
 func (n *editNode) init(e event) error {
 	n.val = []rune{}
 	n.pos = 0
@@ -419,18 +482,10 @@ func (n *editNode) init(e event) error {
 }
 
 func (n *editNode) handle(e event) error {
-	// Reset Position if in invalid location
-	if n.pos >= uint(len(n.val)) {
-		n.pos = uint(len(n.val)) - 1
-	}
-
 	switch {
 	case isAlphaNumeric(e.val), isWhitespace(e.val):
 		// Insert Character into Buffer
-		start, end := n.val[:n.pos], n.val[n.pos:]
-		combined := append(start, e.val)
-		n.val = append(combined, end...)
-		n.pos++
+		n.insert(e.val)
 		return nil
 	default:
 		return nil
