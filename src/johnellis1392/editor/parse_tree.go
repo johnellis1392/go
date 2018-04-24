@@ -36,20 +36,18 @@ type rootNode struct {
 var _ node = (*rootNode)(nil)
 
 func (n *rootNode) handle(e *event) error {
-	if e.typ != keyPress {
-		return nil
-	}
-
 	switch {
-	case isChar(e.val):
+	case e.val == 'v':
+		// 'var' statement; declaration
 		decl := &declNode{n, nil}
 		n.exprs = append(n.exprs, decl)
 		return decl.handle(e)
-	case isDigit(e.val):
+	case isDigit(e.val), isChar(e.val):
 		expr := &exprNode{n, nil}
 		n.exprs = append(n.exprs, expr)
 		return expr.handle(e)
 	case isWhitespace(e.val):
+		// Ignore
 		return nil
 	default:
 		// NOP
@@ -75,10 +73,6 @@ type declNode struct {
 var _ node = (*declNode)(nil)
 
 func (n *declNode) handle(e *event) error {
-	if e.typ != keyPress {
-		return nil
-	}
-
 	switch {
 	case isChar(e.val):
 		// Character Pressed: Default to Identifier
