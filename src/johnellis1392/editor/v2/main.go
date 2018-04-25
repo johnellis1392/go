@@ -558,19 +558,43 @@ func (e editor) render(w io.Writer) {
 // Main
 func main() {
 	fmt.Println("Starting Editor...")
-	e := newEditor()
-	go e.eventLoop()
+
+	// e := newEditor()
+	// go e.eventLoop()
 
 	// Main Render Loop
-	for {
-		switch ev := <-e.events; ev.typ {
-		case errorEvent:
-			fmt.Println(ev.val)
-		case keyPress:
-			e.node.handle(ev)
-			e.render(os.Stdout)
-		default:
-			continue
-		}
+	// for {
+	// 	switch ev := <-e.events; ev.typ {
+	// 	case errorEvent:
+	// 		fmt.Println(ev.val)
+	// 	case keyPress:
+	// 		e.node.handle(ev)
+	// 		e.render(os.Stdout)
+	// 	default:
+	// 		continue
+	// 	}
+	// }
+
+	e := newEditor()
+	events := []event{
+		{keyPress, 'i'},
+		{keyPress, 'o'},
+		{keyPress, 'a'},
+		{keyPress, '"'},
+		{keyPress, 'i'},
+		{keyPress, '\n'},
+		{keyPress, '['},
+		{keyPress, '0'},
+		{keyPress, '\n'},
 	}
+
+	fmt.Println()
+	for _, ev := range events {
+		if err := e.node.handle(ev); err != nil {
+			panic(err)
+		}
+		e.render(os.Stdout)
+		fmt.Println()
+	}
+	fmt.Println()
 }
