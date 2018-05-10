@@ -9,8 +9,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func temp(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, World!"))
+}
+
 func newRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
+	r.HandleFunc("/", temp)
 	r.Handle("/api", routes.NewAPIRouter())
 	r.Handle("/assets", routes.NewStaticAssetRouter())
 

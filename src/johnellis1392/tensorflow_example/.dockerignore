@@ -1,0 +1,9 @@
+bin
+.gitignore
+
+.dockerignore
+Dockerfile
+docker-compose.yaml
+
+main
+tensorflow_example
